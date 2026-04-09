@@ -147,10 +147,12 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
   transition: width 0.4s var(--ease-fluid);
   border-radius: 1px;
 }
-.nav a:hover::after,
 .nav a.active::after { width: 100%; }
-.nav a:hover,
 .nav a.active { color: var(--ocean-mid); }
+@media (hover: hover) {
+  .nav a:hover::after { width: 100%; }
+  .nav a:hover { color: var(--ocean-mid); }
+}
 
 /* ═══════════════════════════════════════════
    WAVE LAYERS
@@ -396,12 +398,8 @@ h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 700; line-height
   position: relative;
   z-index: 1;
   padding: 6rem 2rem;
-  max-width: 960px;
-  margin: 0 auto;
-}
-
-.section-wide {
   max-width: 1100px;
+  margin: 0 auto;
 }
 
 .section-header {
@@ -443,6 +441,35 @@ html.js .section-sketch {
   transition: opacity 1.2s var(--ease-fluid);
 }
 html.js .section-sketch.visible { opacity: 1; }
+
+/* compass label: pill badge to the left of the compass */
+#compass-sketch { z-index: 1; }
+
+#compass-label {
+  position: absolute;
+  right: calc(100% + 1rem);
+  top: 70px;
+  transform: translateY(-50%);
+  width: 185px;
+  font-family: var(--font-sketch);
+  pointer-events: none;
+}
+.compass-phrase {
+  text-align: center;
+  white-space: normal;
+  line-height: 1.4;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ocean-deep);
+  background: rgba(248, 244, 239, 0.94);
+  padding: 0.6em 1.2em;
+  border-radius: 20px;
+  border: 1px solid rgba(40, 175, 176, 0.3);
+  box-shadow: 0 2px 12px rgba(11, 36, 71, 0.09);
+  transition: opacity 0.45s ease;
+  opacity: 0;
+}
+.compass-phrase.cp-active { opacity: 1; }
 
 /* ═══════════════════════════════════════════
    SKETCH SVG ANIMATIONS
@@ -1086,7 +1113,48 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
   .personal-section, .interessi-section { padding: 2rem 1.2rem; }
   .skills-grid { grid-template-columns: 1fr; }
   .section-sketch { display: none; }
-  .hero-portrait { display: none; }
+  .hero-portrait {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    mix-blend-mode: normal;
+    mask-image: none;
+    -webkit-mask-image: none;
+    filter: contrast(1.05) brightness(1.05);
+    border: 3px solid rgba(255,255,255,0.3);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    margin-bottom: 1rem;
+    animation-name: portraitRevealMobile;
+  }
+  @keyframes portraitRevealMobile {
+    0%   { opacity: 0; filter: contrast(1.05) brightness(1.05) blur(6px); transform: scale(0.85); }
+    100% { opacity: 1; filter: contrast(1.05) brightness(1.05) blur(0); transform: scale(1); }
+  }
+  .exp-card-icon svg,
+  .skill-card-icon svg {
+    filter: saturate(1.6) contrast(1.4);
+  }
+  .exp-card-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    background: rgba(40,175,176,0.08);
+    border-radius: 10px;
+    padding: 6px;
+  }
+  .skill-card-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    background: rgba(40,175,176,0.08);
+    border-radius: 12px;
+    padding: 6px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1185,14 +1253,19 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
       <line x1="70" y1="112" x2="70" y2="122" stroke="var(--ocean-mid)" stroke-width="1.5" style="--path-length:10"/>
       <line x1="18" y1="70" x2="28" y2="70" stroke="var(--ocean-mid)" stroke-width="1.5" style="--path-length:10"/>
       <line x1="112" y1="70" x2="122" y2="70" stroke="var(--ocean-mid)" stroke-width="1.5" style="--path-length:10"/>
-      <!-- needle -->
-      <path d="M70 30 L64 70 L70 65 L76 70 Z" stroke="var(--coral)" stroke-width="1.2" fill="rgba(231,111,81,0.15)" stroke-linejoin="round" style="--path-length:120"/>
-      <path d="M70 110 L64 70 L70 75 L76 70 Z" stroke="var(--ocean-mid)" stroke-width="1.2" fill="rgba(25,100,126,0.1)" stroke-linejoin="round" style="--path-length:120"/>
-      <!-- center dot -->
-      <circle cx="70" cy="70" r="3" stroke="var(--ocean-mid)" stroke-width="1.5" fill="var(--sand)" style="--path-length:19"/>
+      <!-- needle (rotated by JS to follow mouse) -->
+      <g id="compass-needle">
+        <path d="M70 30 L64 70 L70 65 L76 70 Z" stroke="var(--coral)" stroke-width="1.2" fill="rgba(231,111,81,0.15)" stroke-linejoin="round" style="--path-length:120"/>
+        <path d="M70 110 L64 70 L70 75 L76 70 Z" stroke="var(--ocean-mid)" stroke-width="1.2" fill="rgba(25,100,126,0.1)" stroke-linejoin="round" style="--path-length:120"/>
+        <!-- center dot -->
+        <circle cx="70" cy="70" r="3" stroke="var(--ocean-mid)" stroke-width="1.5" fill="var(--sand)" style="--path-length:19"/>
+      </g>
       <!-- watercolor wash -->
       <circle class="sketch-fill" cx="70" cy="70" r="50" fill="rgba(40,175,176,0.03)"/>
     </svg>
+    <div id="compass-label">
+      <div class="compass-phrase cp-active" id="compass-pill">Navigando verso un lavoro che mi accenda ogni mattina</div>
+    </div>
   </div>
 
   <div class="section-header reveal">
@@ -1209,7 +1282,7 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
 </section>
 
 <!-- ═══════════ ESPERIENZA ═══════════ -->
-<section class="section section-wide" id="esperienza">
+<section class="section" id="esperienza">
   <div class="section-header reveal">
     <h2>Esperienza</h2>
   </div>
@@ -1445,7 +1518,7 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
 </section>
 
 <!-- ═══════════ COMPETENZE ═══════════ -->
-<section class="section section-wide" id="competenze">
+<section class="section" id="competenze">
   <div class="section-header reveal">
     <h2>Competenze</h2>
   </div>
@@ -1768,7 +1841,7 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
      JAVASCRIPT
      ═══════════════════════════════════════════ -->
 <script>
-(function() {
+(() => {
   'use strict';
 
   // ─── NAVIGATION SHOW/HIDE ───
@@ -1788,15 +1861,16 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
     }
 
     let currentId = '';
-    const offset = 120;
+    const offset = 150;
     for (let i = sections.length - 1; i >= 0; i--) {
-      if (scrollY >= sections[i].offsetTop - offset) {
+      const rect = sections[i].getBoundingClientRect();
+      if (rect.top <= offset) {
         currentId = sections[i].id;
         break;
       }
     }
     navLinks.forEach(a => {
-      a.classList.toggle('active', a.getAttribute('href') === '#' + currentId);
+      a.classList.toggle('active', a.getAttribute('href') === `#${currentId}`);
     });
   }
   window.addEventListener('scroll', handleNavScroll, { passive: true });
@@ -1804,7 +1878,7 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
 
   // ─── FALLBACK: show everything if IntersectionObserver is missing ───
   if (!('IntersectionObserver' in window)) {
-    document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .lang-card, .section-sketch, .highlight-word').forEach(function(el) {
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .lang-card, .section-sketch, .highlight-word').forEach(el => {
       el.classList.add('visible', 'highlighted');
       var svg = el.querySelector('.sketch-draw');
       if (svg) svg.classList.add('drawn');
@@ -1882,22 +1956,22 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
   } // end IntersectionObserver check
 
   // ─── SAFETY TIMEOUT: force visibility after 2s ───
-  setTimeout(function() {
-    document.querySelectorAll('.reveal:not(.visible), .reveal-left:not(.visible), .reveal-right:not(.visible)').forEach(function(el) {
+  setTimeout(() => {
+    document.querySelectorAll('.reveal:not(.visible), .reveal-left:not(.visible), .reveal-right:not(.visible)').forEach(el => {
       el.classList.add('visible');
     });
   }, 2000);
 
   // ─── RIPPLE EFFECT ON CARDS ───
   document.querySelectorAll('.ripple-container').forEach(card => {
-    card.addEventListener('mouseenter', function(e) {
+    card.addEventListener('mouseenter', e => {
       const rect = card.getBoundingClientRect();
       const ripple = document.createElement('span');
       ripple.classList.add('ripple');
       const size = Math.max(rect.width, rect.height);
-      ripple.style.width = ripple.style.height = size + 'px';
-      ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
-      ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+      ripple.style.width = ripple.style.height = `${size}px`;
+      ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+      ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
       card.appendChild(ripple);
       ripple.addEventListener('animationend', () => ripple.remove());
     });
@@ -1909,14 +1983,14 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
   if (!canvas || !canvas.getContext) throw 0;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw 0;
-  let particles = [];
+  const particles = [];
   let animFrameId;
   let canvasW, canvasH;
 
-  function resizeCanvas() {
+  const resizeCanvas = () => {
     canvasW = canvas.width = window.innerWidth;
     canvasH = canvas.height = window.innerHeight;
-  }
+  };
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
@@ -2003,11 +2077,11 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
     particles.push(p);
   }
 
-  function animateParticles() {
+  const animateParticles = () => {
     ctx.clearRect(0, 0, canvasW, canvasH);
     particles.forEach(p => { p.update(); p.draw(); });
     animFrameId = requestAnimationFrame(animateParticles);
-  }
+  };
   animateParticles();
 
   document.addEventListener('visibilitychange', () => {
@@ -2033,8 +2107,8 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
       cH = r.height;
       cc.width = cW * dpr;
       cc.height = cH * dpr;
-      cc.style.width = cW + 'px';
-      cc.style.height = cH + 'px';
+      cc.style.width = `${cW}px`;
+      cc.style.height = `${cH}px`;
       cx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     resizeCircuit();
@@ -2178,6 +2252,116 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
     'color: #28afb0; font-family: monospace; font-size: 12px; line-height: 1.4;'
   );
 
+  // ─── COMPASS NORTH FOLLOWS MOUSE (oil damping + mouse-settle phrase) ───
+  (() => {
+    const compassEl = document.getElementById('compass-sketch');
+    const needle    = document.getElementById('compass-needle');
+    const pill      = document.getElementById('compass-pill');
+    if (!compassEl || !needle) return;
+
+    // 24 desires — one every 15° clockwise from North (0°)
+    const DESIRES = [
+      'un lavoro che mi accenda ogni mattina',           //   0°
+      'un team brillante da cui imparare ogni giorno',   //  15°
+      'architetture eleganti che durino nel tempo',      //  30°
+      'sfide tecniche irrisolte che tengano sveglio',    //  45°
+      'un ambiente dove l\'AI sia già il presente',      //  60°
+      'conversazioni che cambino il modo di vedere',     //  75°
+      'orizzonti professionali più larghi',              //  90°
+      'persone migliori di me da cui crescere',          // 105°
+      'progetti che lascino qualcosa di duraturo',       // 120°
+      'la versione migliore di me stesso',               // 135°
+      'una leadership che ispiri, non che gestisca',     // 150°
+      'il coraggio di sbagliare in grande',              // 165°
+      'tempo per costruire cose davvero belle',          // 180°
+      'una cultura che rispetti le persone prima del codice', // 195°
+      'la gentilezza come vero motore di crescita',      // 210°
+      'un problema che nessuno abbia ancora risolto',    // 225°
+      'un modello di lavoro fondato sulla fiducia',      // 240°
+      'un prodotto che cambi la vita di qualcuno',       // 255°
+      'il mare e una tavola da wing foil',               // 270°
+      'feedback onesti, anche quando fanno male',        // 285°
+      'un team eterogeneo che ragioni insieme',          // 300°
+      'la semplicità di un sistema ben progettato',      // 315°
+      'qualcosa che oggi non esiste ancora',             // 330°
+      'un posto dove valga la pena restare',             // 345°
+    ];
+
+    let mouseX = null, mouseY = null;
+    let targetAngle  = 0;
+    let currentAngle = 0;
+    let velocity     = 0;
+    let currentSector = 0;
+    let boxShowing    = true;
+    let settleTimer   = null;
+
+    const STIFFNESS = 0.022;
+    const DAMPING   = 0.89;
+    const SETTLE_MS = 400; // ms of mouse stillness before the pill reappears
+
+    const compassSvg = compassEl.querySelector('svg');
+
+    if (pill) pill.textContent = `Navigando verso ${DESIRES[0]}`;
+
+    // Fade the pill out
+    function hidePill() {
+      if (!pill || !boxShowing) return;
+      pill.classList.remove('cp-active');
+      boxShowing = false;
+    }
+
+    // Update text (while invisible) then fade in
+    function showPill() {
+      if (!pill) return;
+      pill.textContent = `Navigando verso ${DESIRES[currentSector]}`;
+      pill.classList.add('cp-active');
+      boxShowing = true;
+    }
+
+    document.addEventListener('mousemove', e => {
+      const dx = mouseX !== null ? e.clientX - mouseX : 0;
+      const dy = mouseY !== null ? e.clientY - mouseY : 0;
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+
+      if (Math.sqrt(dx * dx + dy * dy) > 3) {
+        hidePill();
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(showPill, SETTLE_MS);
+      }
+    });
+
+    function normalizeAngle(a) {
+      while (a >  180) a -= 360;
+      while (a < -180) a += 360;
+      return a;
+    }
+
+    function tick() {
+      if (mouseX !== null) {
+        const r  = (compassSvg || compassEl).getBoundingClientRect();
+        const cx = r.left + r.width  / 2;
+        const cy = r.top  + r.height / 2;
+        targetAngle = Math.atan2(mouseX - cx, cy - mouseY) * (180 / Math.PI);
+      }
+
+      const diff = normalizeAngle(targetAngle - currentAngle);
+      velocity += diff * STIFFNESS;
+      velocity *= DAMPING;
+      currentAngle += velocity;
+
+      needle.setAttribute('transform', `rotate(${currentAngle}, 70, 70)`);
+
+      // Track current sector continuously — phrase is read on settle, not on every change
+      const displayAngle = ((currentAngle % 360) + 360) % 360;
+      currentSector = Math.floor(displayAngle / 15) % 24;
+
+      requestAnimationFrame(tick);
+    }
+
+    tick();
+  })();
+
   // ─── EASTER EGG 2: Click Fish → Swims Away & Returns ───
   (() => {
     const fishSketch = document.getElementById('fish-sketch');
@@ -2209,7 +2393,7 @@ html.js .reveal-right.visible { opacity: 1; transform: translateX(0); }
             fishSketch.querySelectorAll('path, circle').forEach(el => {
               if (el.classList.contains('bubble')) return;
               const origStroke = el.getAttribute('stroke');
-              if (origStroke && origStroke.includes('ocean')) {
+              if (origStroke?.includes('ocean')) {
                 el.style.transition = 'stroke 0.6s ease';
                 el.style.stroke = `hsl(${hue}, 60%, 45%)`;
                 setTimeout(() => { el.style.stroke = ''; }, 2000);
